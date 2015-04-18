@@ -1,0 +1,11 @@
+{
+	// Parse configs use local.json
+	"Parse": {
+		"app": "",
+		"javascript": ""
+	},
+	// Session configs use local.json
+	"Session": {
+		"secret": ""
+	}
+}
