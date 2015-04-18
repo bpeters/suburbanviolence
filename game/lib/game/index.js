@@ -9,8 +9,8 @@ ig.module(
 )
 .defines(function(){
 
-	var WIDTH = window.innerWidth;
-	var HEIGHT = window.innerHeight;
+	var WIDTH = window.innerWidth - 5;
+	var HEIGHT = window.innerHeight - 5;
 
 	GAME = ig.Game.extend({
 
@@ -23,7 +23,8 @@ ig.module(
 
 			//Load Level
 			this.loadLevel( LevelGameLevel );
-			this.spawnEntity(EntityPlayer, WIDTH / 2, HEIGHT / 2);
+			this.spawnEntity(EntityPlayer, 50, HEIGHT / 2);
+			this.spawnEntity(EntityPlayer2, WIDTH - 50, HEIGHT / 2);
 		},
 
 		update: function() {
@@ -48,14 +49,19 @@ ig.module(
 
 			ig.input.bind( ig.KEY.A, 'left' );
 			ig.input.bind( ig.KEY.D, 'right' );
-			ig.input.bind( ig.KEY.SPACE, 'jump' );
+			ig.input.bind( ig.KEY.W, 'jump' );
+			ig.input.bind( ig.KEY.SPACE, 'start' );
+
+			ig.input.bind( ig.KEY.LEFT_ARROW, 'left-2' );
+			ig.input.bind( ig.KEY.RIGHT_ARROW, 'right-2' );
+			ig.input.bind( ig.KEY.UP_ARROW, 'jump-2' );
 
 			this.loadLevel( LevelGameLevel );
 		},
 
 		update: function() {
 
-			if( ig.input.pressed('jump')) {
+			if( ig.input.pressed('start')) {
 				ig.system.setGame( GAME );
 				return;
 			}
