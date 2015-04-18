@@ -1,0 +1,7 @@
+node_modules
+config/local.json
+game/tools
+game/media
+game/lib/impact
+game/lib/weltmeister
+game/weltmesiter.html
