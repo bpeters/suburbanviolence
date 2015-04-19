@@ -164,6 +164,7 @@ ig.module(
 				if((ig.input.pressed('cart') && this.player === 1) || (ig.input.pressed('cart-2') && this.player === 2)) {
 					this.cart = !this.cart;
 					if (this.cart) {
+						this.attacked = false;
 						this.maxVel.x = 1000;
 						this.currentAnim = this.anims.cart;
 						this.sfxEquip.play();
