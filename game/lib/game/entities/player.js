@@ -17,7 +17,7 @@ ig.module(
 		maxVel: {x: 500, y: 500},
 		friction: {x: 700, y: 0},
 
-		collides: ig.Entity.COLLIDES.PASSIVE,
+		collides: ig.Entity.COLLIDES.ACTIVE,
 
 		animSheet: new ig.AnimationSheet( 'media/player.png', 64, 64 ),
 
@@ -29,6 +29,7 @@ ig.module(
 		running: false,
 		standing: true,
 		banana: false,
+		cart: false,
 		attacked: false,
 		accelGround: 1200,
 		accelAir: 100,
@@ -42,6 +43,7 @@ ig.module(
 			this.addAnim( 'idle', 0.5, [0,0,5,5,6,6,7,7,8,8,9,9] );
 			this.addAnim( 'run', 0.1, [10,11,12,13,14] );
 			this.addAnim( 'banana', 0.1, [15,16,17,18,19] );
+			this.addAnim( 'cart', 0.1, [30,31,32,33,34] );
 			this.addAnim( 'tossBanana', 1, [20] );
 			this.addAnim( 'jump', 1, [1,2,3] );
 			this.addAnim( 'jumpBanana', 1, [21,22,23] );
@@ -64,7 +66,7 @@ ig.module(
 				this.accel.x = 0;
 			}
 
-			if (this.standing && this.running) {
+			if (this.standing && this.running && !this.cart) {
 				if((ig.input.pressed('jump') && this.player === 1) || (ig.input.pressed('jump-2') && this.player === 2)) {
 					this.vel.y = -this.jump;
 					this.sfxJump.play();
@@ -105,6 +107,8 @@ ig.module(
 			} else if( this.vel.x != 0 ) {
 				if (this.banana) {
 					this.currentAnim = this.anims.banana;
+				} else if (this.cart) {
+					this.currentAnim = this.anims.cart;
 				} else {
 					this.currentAnim = this.anims.run;
 				}
@@ -118,7 +122,11 @@ ig.module(
 
 			this.currentAnim.flip.x = this.flip;
 
-			if (this.pos.x > WIDTH / 2 + 400 ) {
+			if (this.pos.x >= WIDTH - this.size.x) {
+				this.vel.x = -10;
+			} else if (this.pos.x <= 0) {
+				this.vel.x = 10;
+			} else if (this.pos.x > WIDTH / 2 + 400 ) {
 				this.flip = true; 
 			} else if (this.pos.x < WIDTH / 2 - 400) {
 				this.flip = false;
@@ -129,6 +137,26 @@ ig.module(
 					this.banana = true;
 					this.currentAnim == this.anims.banana;
 					this.sfxEquip.play();
+				}
+			}
+
+			if (this.running && !this.cart && !this.attacked) {
+				if((ig.input.pressed('cart') && this.player === 1) || (ig.input.pressed('cart-2') && this.player === 2)) {
+					this.cart = true;
+					this.currentAnim == this.anims.cart;
+					this.sfxEquip.play();
+					var spawnX, spawnY = this.pos.y;
+					if (this.flip) {
+						spawnX = this.pos.x - this.size.x;
+					} else {
+						spawnX = this.pos.x + this.size.x;
+					}
+					ig.game.spawnEntity( EntityCart, spawnY, spawnX, {
+						flip: this.flip,
+						type: this.type,
+						checkAgainst: this.checkAgainst,
+						player: this
+					});
 				}
 			}
 
@@ -221,6 +249,66 @@ ig.module(
 
 	});
 
+	EntityCart = ig.Entity.extend({
+
+		size: {x: 32, y: 32},
+		offset: {x: 32, y: 16},
+
+		maxVel: {x: 200, y: 200},
+		friction: {x: 700, y: 0},
+		player : null,
+
+		collides: ig.Entity.COLLIDES.ACTIVE,
+
+		animSheet: new ig.AnimationSheet( 'media/cart.png', 64, 48 ),
+
+		pushed: false,
+		accelGround: 400,
+		health: 1,
+
+		init: function( x, y, settings ) {
+			this.parent( x, y, settings );
+
+			this.player = settings.player;
+
+			this.addAnim( 'idle', 0.1, [0, 1, 2] );
+
+			ig.game.cart = this;
+		},
+
+		update: function() {
+
+			var accel = this.accelGround;
+			if( this.flip && this.pushed) {
+				this.accel.x = -accel;
+			}
+			else if( !this.flip && this.pushed) {
+				this.accel.x = accel;
+			}
+			else {
+				this.flip = this.player.flip;
+				this.pos.y = this.player.pos.y + this.size.y;
+				if (!this.flip) {
+					this.pos.x = this.player.pos.x + this.player.size.x + this.size.x + this.player.offset.x;
+				} else {
+					this.pos.x = this.player.pos.x - this.player.size.x - this.player.offset.x ;
+				}
+			}
+
+			this.currentAnim = this.anims.idle;
+
+			this.currentAnim.flip.x = this.flip;
+
+			// Move!
+			this.parent();
+		},
+
+		check: function( other ) {
+			
+		},
+
+	});
+
 	EntityGround = ig.Entity.extend({
 
 		size: {x: WIDTH, y: 100},
@@ -236,6 +324,38 @@ ig.module(
 		},
 
 		update: function() {
+
+			this.pos.y = HEIGHT - 100;
+			this.pos.x = 0;
+
+			// Move!
+			this.parent();
+		},
+
+	});
+
+	EntityShelf = ig.Entity.extend({
+
+		size: {x: 160, y: 160},
+		gravityFactor: 0,
+		offset: {x: 16, y: 16},
+		friction: {x: 700, y: 0},
+
+		collides: ig.Entity.COLLIDES.NEVER,
+
+		animSheet: new ig.AnimationSheet( 'media/shelf.png', 176, 176 ),
+
+		init: function( x, y, settings ) {
+			this.parent( x, y, settings );
+
+			this.addAnim( 'idle', 1, [0] );
+
+			ig.game.shelf = this;
+		},
+
+		update: function() {
+
+			this.currentAnim == this.anims.idle;
 
 			// Move!
 			this.parent();

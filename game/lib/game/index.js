@@ -20,12 +20,29 @@ ig.module(
 
 		white: new ig.Font( 'media/white.font.png' ),
 		redbold: new ig.Font( 'media/red_bold.font.png' ),
+		bluebold: new ig.Font( 'media/blue_bold.font.png' ),
 
 		init: function() {
 
-			//Load Level
+			ig.input.bind( ig.KEY.W, 'jump' );
+			ig.input.bind( ig.KEY.E, 'attack' );
+			ig.input.bind( ig.KEY._1, 'banana' );
+			ig.input.bind( ig.KEY._2, 'cart' );
+
+			ig.input.bind( ig.KEY.I, 'jump-2' );
+			ig.input.bind( ig.KEY.O, 'attack-2' );
+			ig.input.bind( ig.KEY._0, 'banana-2' );
+			ig.input.bind( ig.KEY._9, 'cart-2' );
+
+			ig.input.bind( ig.KEY.SPACE, 'start' );
+
 			this.loadLevel( LevelGameLevel );
 			this.spawnEntity(EntityGround, 0, HEIGHT - 100);
+			this.spawnEntity(EntityShelf, WIDTH / 2, HEIGHT - 276);
+			this.spawnEntity(EntityShelf, WIDTH / 2 - 400, HEIGHT - 276);
+			this.spawnEntity(EntityShelf, WIDTH / 2 - 200, HEIGHT - 276);
+			this.spawnEntity(EntityShelf, WIDTH / 2 + 200, HEIGHT - 276);
+			this.spawnEntity(EntityShelf, WIDTH / 2 + 400, HEIGHT - 276);
 			this.spawnEntity(EntityPlayer, WIDTH / 2 - 400, HEIGHT - 200, {
 				player: 1,
 				type: ig.Entity.TYPE.A,
@@ -76,14 +93,15 @@ ig.module(
 			var player2 = this.getEntitiesByType( EntityPlayer )[1];
 
 			if(!player.running || !player2.running) {
-
-				this.redbold.draw('Press SPACE to start dual', WIDTH / 2, 20, ig.Font.ALIGN.CENTER );
-				this.redbold.draw(this.playerScore + ' - ' + this.player2Score, WIDTH / 2, 60, ig.Font.ALIGN.CENTER );
+				this.redbold.draw('Suburban Violence', WIDTH / 2, 20, ig.Font.ALIGN.CENTER );
+				this.bluebold.draw('Press SPACE to start dual', WIDTH / 2, 50, ig.Font.ALIGN.CENTER );
+				this.redbold.draw(this.playerScore + ' - ' + this.player2Score, WIDTH / 2, 90, ig.Font.ALIGN.CENTER );
 			} else {
-				this.redbold.draw('Press W or I to Jump', WIDTH / 2, 20, ig.Font.ALIGN.CENTER );
-				this.redbold.draw('Press 1 or 0 to Equip Weapon', WIDTH / 2, 40, ig.Font.ALIGN.CENTER );
-				this.redbold.draw('Press E or O to Use Weapon', WIDTH / 2, 60, ig.Font.ALIGN.CENTER );
-				this.redbold.draw(player2.deaths + ' - ' + player.deaths, WIDTH / 2, 100, ig.Font.ALIGN.CENTER );
+				this.redbold.draw('Suburban Violence', WIDTH / 2, 20, ig.Font.ALIGN.CENTER );
+				this.bluebold.draw('Press W or I to Jump', WIDTH / 2, 50, ig.Font.ALIGN.CENTER );
+				this.bluebold.draw('Press 1 or 0 to Equip Weapon', WIDTH / 2, 80, ig.Font.ALIGN.CENTER );
+				this.bluebold.draw('Press E or O to Use Weapon', WIDTH / 2, 110, ig.Font.ALIGN.CENTER );
+				this.redbold.draw(player2.deaths + ' - ' + player.deaths, WIDTH / 2, 150, ig.Font.ALIGN.CENTER );
 			}
 			
 		}
@@ -97,17 +115,7 @@ ig.module(
 
 		init: function() {
 
-			ig.input.bind( ig.KEY.W, 'jump' );
-			ig.input.bind( ig.KEY.E, 'attack' );
-			ig.input.bind( ig.KEY._1, 'banana' );
 
-			ig.input.bind( ig.KEY.I, 'jump-2' );
-			ig.input.bind( ig.KEY.O, 'attack-2' );
-			ig.input.bind( ig.KEY._0, 'banana-2' );
-
-			ig.input.bind( ig.KEY.SPACE, 'start' );
-
-			this.loadLevel( LevelGameLevel );
 		},
 
 		update: function() {
@@ -158,6 +166,6 @@ ig.module(
 	}, false);
 
 	var width = WIDTH * scale, height = HEIGHT * scale;
-	ig.main( '#canvas', TITLE, 60, width, height, 1, ig.ImpactSplashLoader );
+	ig.main( '#canvas', GAME, 60, width, height, 1, ig.ImpactSplashLoader );
 
 });
