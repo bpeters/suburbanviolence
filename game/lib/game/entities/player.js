@@ -23,6 +23,7 @@ ig.module(
 
 		sfxJump: new ig.Sound( 'media/sounds/jump.*' ),
 		sfxBanana: new ig.Sound( 'media/sounds/banana.*' ),
+		sfxEquip: new ig.Sound( 'media/sounds/equip.*' ),
 
 		flip: false,
 		running: false,
@@ -33,27 +34,25 @@ ig.module(
 		accelAir: 100,
 		jump: 450,
 		health: 1,
+		deaths: 0,
 
 		init: function( x, y, settings ) {
 			this.parent( x, y, settings );
 
-			this.addAnim( 'idle', 0.8, [0,0,5,5,6,6,7,7,8,8,9,9] );
+			this.addAnim( 'idle', 0.5, [0,0,5,5,6,6,7,7,8,8,9,9] );
 			this.addAnim( 'run', 0.1, [10,11,12,13,14] );
 			this.addAnim( 'banana', 0.1, [15,16,17,18,19] );
 			this.addAnim( 'tossBanana', 1, [20] );
 			this.addAnim( 'jump', 1, [1,2,3] );
+			this.addAnim( 'jumpBanana', 1, [21,22,23] );
 			this.addAnim( 'fall', 0.1, [4,3,2], true );
+			this.addAnim( 'fallBanana', 0.1, [24,23,22], true );
+			this.addAnim( 'koBanana', 1, [25,26,27], true );
 
 			ig.game.player = this;
 		},
 
 		update: function() {
-
-			if (this.pos.y > HEIGHT / 2 - this.size.y) {
-				this.pos.y = HEIGHT / 2 - this.size.y;
-				this.standing = true;
-				this.vel.y = 0;
-			}
 
 			if( this.flip && this.running ) {
 				this.accel.x = -this.accelGround;
@@ -73,7 +72,11 @@ ig.module(
 			}
 
 			if ( this.vel.y < 0 ) {
-				this.currentAnim = this.anims.jump;
+				if (this.banana) {
+					this.currentAnim = this.anims.jumpBanana;
+				} else {
+					this.currentAnim = this.anims.jump;
+				}
 				this.standing = false;
 				if( this.flip && this.running ) {
 					this.accel.x = -this.accelAir;
@@ -84,7 +87,12 @@ ig.module(
 				}
 			} else if( this.vel.y > 0 ) {
 				if ( this.currentAnim != this.anims.fall ) {
-					this.currentAnim = this.anims.fall.rewind();
+					if (this.banana) {
+						this.currentAnim = this.anims.fallBanana.rewind();
+					} else {
+						this.currentAnim = this.anims.fall.rewind();
+					}
+					
 				}
 				this.standing = false;
 				if ( this.flip && this.running ) {
@@ -101,6 +109,8 @@ ig.module(
 					this.currentAnim = this.anims.run;
 				}
 				this.standing = true;
+			} else if (this.currentAnim === this.anims.koBanana && this.currentAnim.loopCount < 1) {
+
 			} else {
 				this.currentAnim = this.anims.idle;
 				this.standing = true;
@@ -114,10 +124,11 @@ ig.module(
 				this.flip = false;
 			}
 
-			if (this.running && !this.banana) {
+			if (this.running && !this.banana && !this.attacked) {
 				if((ig.input.pressed('banana') && this.player === 1) || (ig.input.pressed('banana-2') && this.player === 2)) {
 					this.banana = true;
 					this.currentAnim == this.anims.banana;
+					this.sfxEquip.play();
 				}
 			}
 
@@ -154,7 +165,7 @@ ig.module(
 		size: {x: 20, y: 20},
 		offset: {x: 12, y: 12},
 
-		maxVel: {x: 500, y: 500},
+		maxVel: {x: 200, y: 200},
 		friction: {x: 700, y: 0},
 
 		collides: ig.Entity.COLLIDES.PASSIVE,
@@ -162,8 +173,7 @@ ig.module(
 		animSheet: new ig.AnimationSheet( 'media/banana.png', 32, 32 ),
 
 		dropped: true,
-		finished: false,
-		accelGround: 600,
+		accelGround: 400,
 		health: 1,
 
 		init: function( x, y, settings ) {
@@ -177,11 +187,8 @@ ig.module(
 
 		update: function() {
 
-			if (this.pos.y > HEIGHT / 2 - 13) {
-				this.pos.y = HEIGHT / 2 - 13;
-				this.finished = true;
+			if (this.pos.y > HEIGHT - 130) {
 				this.dropped = false;
-				this.vel.y = 0;
 			}
 
 			var accel = this.accelGround;
@@ -205,8 +212,33 @@ ig.module(
 		},
 
 		check: function( other ) {
-			console.log(other);
-			//this.kill();
+			other.running = false;
+			other.vel.x = 0;
+			other.currentAnim = other.anims.koBanana.rewind();
+			this.kill();
+			other.deaths ++;
+		},
+
+	});
+
+	EntityGround = ig.Entity.extend({
+
+		size: {x: WIDTH, y: 100},
+		gravityFactor: 0,
+		friction: {x: 700, y: 0},
+
+		collides: ig.Entity.COLLIDES.ACTIVE,
+
+		init: function( x, y, settings ) {
+			this.parent( x, y, settings );
+
+			ig.game.ground = this;
+		},
+
+		update: function() {
+
+			// Move!
+			this.parent();
 		},
 
 	});

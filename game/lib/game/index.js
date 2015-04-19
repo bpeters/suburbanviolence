@@ -15,6 +15,8 @@ ig.module(
 	GAME = ig.Game.extend({
 
 		gravity: 800,
+		playerScore: 0,
+		player2Score: 0,
 
 		white: new ig.Font( 'media/white.font.png' ),
 		redbold: new ig.Font( 'media/red_bold.font.png' ),
@@ -23,17 +25,27 @@ ig.module(
 
 			//Load Level
 			this.loadLevel( LevelGameLevel );
-			this.spawnEntity(EntityPlayer, WIDTH / 2 - 400, HEIGHT / 2, {
+			this.spawnEntity(EntityGround, 0, HEIGHT - 100);
+			this.spawnEntity(EntityPlayer, WIDTH / 2 - 400, HEIGHT - 200, {
 				player: 1,
 				type: ig.Entity.TYPE.A,
 				checkAgainst: ig.Entity.TYPE.B
 			});
-			this.spawnEntity(EntityPlayer, WIDTH / 2 + 400, HEIGHT / 2, {
+			this.spawnEntity(EntityPlayer, WIDTH / 2 + 400, HEIGHT - 200, {
 				player: 2,
 				type: ig.Entity.TYPE.B,
 				checkAgainst: ig.Entity.TYPE.A,
 				flip: true
 			});
+		},
+
+		restartPlayers: function(player, player2) {
+			player.running = false;
+			player2.running = false;
+			player.attacked = false;
+			player2.attacked = false;
+			this.player2Score = player.deaths;
+			this.playerScore = player2.deaths;
 		},
 
 		update: function() {
@@ -46,7 +58,11 @@ ig.module(
 				return;
 			}
 
-			if(ig.input.pressed('start') && !player.running && !player2.running) {
+			if (this.player2Score < player.deaths || this.playerScore < player2.deaths) {
+				this.restartPlayers(player, player2);
+			}
+			var count;
+			if(ig.input.pressed('start') && (!player.running || !player2.running)) {
 				player.running = true;
 				player2.running = true;
 			}
@@ -56,7 +72,20 @@ ig.module(
 		draw: function() {
 			this.parent();
 
-			this.redbold.draw('Game Started', WIDTH / 2, 20, ig.Font.ALIGN.CENTER );
+			var player = this.getEntitiesByType( EntityPlayer )[0];
+			var player2 = this.getEntitiesByType( EntityPlayer )[1];
+
+			if(!player.running || !player2.running) {
+
+				this.redbold.draw('Press SPACE to start dual', WIDTH / 2, 20, ig.Font.ALIGN.CENTER );
+				this.redbold.draw(this.playerScore + ' - ' + this.player2Score, WIDTH / 2, 60, ig.Font.ALIGN.CENTER );
+			} else {
+				this.redbold.draw('Press W or I to Jump', WIDTH / 2, 20, ig.Font.ALIGN.CENTER );
+				this.redbold.draw('Press 1 or 0 to Equip Weapon', WIDTH / 2, 40, ig.Font.ALIGN.CENTER );
+				this.redbold.draw('Press E or O to Use Weapon', WIDTH / 2, 60, ig.Font.ALIGN.CENTER );
+				this.redbold.draw(player2.deaths + ' - ' + player.deaths, WIDTH / 2, 100, ig.Font.ALIGN.CENTER );
+			}
+			
 		}
 	});
 
@@ -69,11 +98,11 @@ ig.module(
 		init: function() {
 
 			ig.input.bind( ig.KEY.W, 'jump' );
-			ig.input.bind( ig.KEY.D, 'attack' );
+			ig.input.bind( ig.KEY.E, 'attack' );
 			ig.input.bind( ig.KEY._1, 'banana' );
 
 			ig.input.bind( ig.KEY.I, 'jump-2' );
-			ig.input.bind( ig.KEY.J, 'attack-2' );
+			ig.input.bind( ig.KEY.O, 'attack-2' );
 			ig.input.bind( ig.KEY._0, 'banana-2' );
 
 			ig.input.bind( ig.KEY.SPACE, 'start' );
