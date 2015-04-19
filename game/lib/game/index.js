@@ -23,12 +23,12 @@ ig.module(
 
 			//Load Level
 			this.loadLevel( LevelGameLevel );
-			this.spawnEntity(EntityPlayer, 0, HEIGHT / 2, {
+			this.spawnEntity(EntityPlayer, WIDTH / 2 - 400, HEIGHT / 2, {
 				player: 1,
 				type: ig.Entity.TYPE.A,
 				checkAgainst: ig.Entity.TYPE.B
 			});
-			this.spawnEntity(EntityPlayer, WIDTH - 40, HEIGHT / 2, {
+			this.spawnEntity(EntityPlayer, WIDTH / 2 + 400, HEIGHT / 2, {
 				player: 2,
 				type: ig.Entity.TYPE.B,
 				checkAgainst: ig.Entity.TYPE.A,
@@ -47,10 +47,6 @@ ig.module(
 			}
 
 			if(ig.input.pressed('start') && !player.running && !player2.running) {
-				var bananas = this.getEntitiesByType( EntityBanana );
-				for (var i = 0; i < bananas.length; i++) {
-					bananas[i].kill();
-				}
 				player.running = true;
 				player2.running = true;
 			}
@@ -73,10 +69,12 @@ ig.module(
 		init: function() {
 
 			ig.input.bind( ig.KEY.W, 'jump' );
-			ig.input.bind( ig.KEY.E, 'attack' );
+			ig.input.bind( ig.KEY.D, 'attack' );
+			ig.input.bind( ig.KEY._1, 'banana' );
 
-			ig.input.bind( ig.KEY.NUMPAD_5, 'jump-2' );
-			ig.input.bind( ig.KEY.NUMPAD_6, 'attack-2' );
+			ig.input.bind( ig.KEY.I, 'jump-2' );
+			ig.input.bind( ig.KEY.J, 'attack-2' );
+			ig.input.bind( ig.KEY._0, 'banana-2' );
 
 			ig.input.bind( ig.KEY.SPACE, 'start' );
 
