@@ -39,6 +39,7 @@ ig.module(
 			this.loadLevel( LevelGameLevel );
 			this.spawnEntity(EntityGround, 0, HEIGHT - 100);
 			this.spawnEntity(EntityShelf, WIDTH / 2, HEIGHT - 276);
+			this.spawnEntity(EntityShelf, WIDTH / 2 - 600, HEIGHT - 276);
 			this.spawnEntity(EntityShelf, WIDTH / 2 - 400, HEIGHT - 276);
 			this.spawnEntity(EntityShelf, WIDTH / 2 - 200, HEIGHT - 276);
 			this.spawnEntity(EntityShelf, WIDTH / 2 + 200, HEIGHT - 276);
@@ -46,21 +47,21 @@ ig.module(
 			this.spawnEntity(EntityPlayer, WIDTH / 2 - 400, HEIGHT - 200, {
 				player: 1,
 				type: ig.Entity.TYPE.A,
-				checkAgainst: ig.Entity.TYPE.B
+				checkAgainst: ig.Entity.TYPE.B,
+				sprite: 'media/player.png'
 			});
 			this.spawnEntity(EntityPlayer, WIDTH / 2 + 400, HEIGHT - 200, {
 				player: 2,
 				type: ig.Entity.TYPE.B,
 				checkAgainst: ig.Entity.TYPE.A,
-				flip: true
+				flip: true,
+				sprite: 'media/player2.png'
 			});
 		},
 
 		restartPlayers: function(player, player2) {
 			player.running = false;
 			player2.running = false;
-			player.attacked = false;
-			player2.attacked = false;
 			this.player2Score = player.deaths;
 			this.playerScore = player2.deaths;
 		},
@@ -82,6 +83,8 @@ ig.module(
 			if(ig.input.pressed('start') && (!player.running || !player2.running)) {
 				player.running = true;
 				player2.running = true;
+				player.attacked = false;
+				player2.attacked = false;
 			}
 			this.parent();
 		},
@@ -94,14 +97,16 @@ ig.module(
 
 			if(!player.running || !player2.running) {
 				this.redbold.draw('Suburban Violence', WIDTH / 2, 20, ig.Font.ALIGN.CENTER );
-				this.bluebold.draw('Press SPACE to start dual', WIDTH / 2, 50, ig.Font.ALIGN.CENTER );
-				this.redbold.draw(this.playerScore + ' - ' + this.player2Score, WIDTH / 2, 90, ig.Font.ALIGN.CENTER );
+				this.redbold.draw('Two Player Grocery Store Dual (Share Keyboard)', WIDTH / 2, 40, ig.Font.ALIGN.CENTER );
+				this.bluebold.draw('Press SPACE to start dual', WIDTH / 2, 70, ig.Font.ALIGN.CENTER );
+				this.redbold.draw(this.playerScore + ' - ' + this.player2Score, WIDTH / 2, 110, ig.Font.ALIGN.CENTER );
 			} else {
 				this.redbold.draw('Suburban Violence', WIDTH / 2, 20, ig.Font.ALIGN.CENTER );
-				this.bluebold.draw('Press W or I to Jump', WIDTH / 2, 50, ig.Font.ALIGN.CENTER );
-				this.bluebold.draw('Press 1 or 0 to Equip Weapon', WIDTH / 2, 80, ig.Font.ALIGN.CENTER );
-				this.bluebold.draw('Press E or O to Use Weapon', WIDTH / 2, 110, ig.Font.ALIGN.CENTER );
-				this.redbold.draw(player2.deaths + ' - ' + player.deaths, WIDTH / 2, 150, ig.Font.ALIGN.CENTER );
+				this.redbold.draw('Two Player Grocery Store Dual (Share Keyboard)', WIDTH / 2, 40, ig.Font.ALIGN.CENTER );
+				this.bluebold.draw('Press W or I to Jump', WIDTH / 2, 70, ig.Font.ALIGN.CENTER );
+				this.bluebold.draw('Press 1 or 0 to Equip Weapon, 2 or 9 to Equip/Unequip Cart', WIDTH / 2, 100, ig.Font.ALIGN.CENTER );
+				this.bluebold.draw('Press E or O to Use Weapon', WIDTH / 2, 130, ig.Font.ALIGN.CENTER );
+				this.redbold.draw(player2.deaths + ' - ' + player.deaths, WIDTH / 2, 170, ig.Font.ALIGN.CENTER );
 			}
 			
 		}

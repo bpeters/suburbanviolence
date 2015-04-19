@@ -19,11 +19,15 @@ ig.module(
 
 		collides: ig.Entity.COLLIDES.ACTIVE,
 
-		animSheet: new ig.AnimationSheet( 'media/player.png', 64, 64 ),
+		animSheet: null,
 
 		sfxJump: new ig.Sound( 'media/sounds/jump.*' ),
 		sfxBanana: new ig.Sound( 'media/sounds/banana.*' ),
 		sfxEquip: new ig.Sound( 'media/sounds/equip.*' ),
+
+		white: new ig.Font( 'media/white.font.png' ),
+		redbold: new ig.Font( 'media/red_bold.font.png' ),
+		bluebold: new ig.Font( 'media/blue_bold.font.png' ),
 
 		flip: false,
 		running: false,
@@ -33,12 +37,15 @@ ig.module(
 		attacked: false,
 		accelGround: 1200,
 		accelAir: 100,
+		accelCart: 3000,
 		jump: 450,
 		health: 1,
 		deaths: 0,
 
 		init: function( x, y, settings ) {
 			this.parent( x, y, settings );
+
+			this.animSheet = new ig.AnimationSheet( settings.sprite, 64, 64 ),
 
 			this.addAnim( 'idle', 0.5, [0,0,5,5,6,6,7,7,8,8,9,9] );
 			this.addAnim( 'run', 0.1, [10,11,12,13,14] );
@@ -57,10 +64,19 @@ ig.module(
 		update: function() {
 
 			if( this.flip && this.running ) {
-				this.accel.x = -this.accelGround;
+				if (this.cart) {
+					this.accel.x  = -this.accelCart;
+				} else {
+					this.accel.x = -this.accelGround;
+				}
 			}
 			else if( !this.flip && this.running) {
-				this.accel.x = this.accelGround;
+				if (this.cart) {
+					this.accel.x = this.accelCart;
+				} else {
+					this.accel.x = this.accelGround;
+				}
+				
 			}
 			else {
 				this.accel.x = 0;
@@ -80,7 +96,7 @@ ig.module(
 					this.currentAnim = this.anims.jump;
 				}
 				this.standing = false;
-				if( this.flip && this.running ) {
+				if( this.flip && this.running) {
 					this.accel.x = -this.accelAir;
 				} else if( !this.flip && this.running) {
 					this.accel.x = this.accelAir;
@@ -132,6 +148,10 @@ ig.module(
 				this.flip = false;
 			}
 
+			if (this.cart && this.pos.y < 0) {
+				this.pos.y = 100;
+			}
+
 			if (this.running && !this.banana && !this.attacked) {
 				if((ig.input.pressed('banana') && this.player === 1) || (ig.input.pressed('banana-2') && this.player === 2)) {
 					this.banana = true;
@@ -140,23 +160,35 @@ ig.module(
 				}
 			}
 
-			if (this.running && !this.cart && !this.attacked) {
+			if (this.running) {
 				if((ig.input.pressed('cart') && this.player === 1) || (ig.input.pressed('cart-2') && this.player === 2)) {
-					this.cart = true;
-					this.currentAnim == this.anims.cart;
-					this.sfxEquip.play();
-					var spawnX, spawnY = this.pos.y;
-					if (this.flip) {
-						spawnX = this.pos.x - this.size.x;
+					this.cart = !this.cart;
+					if (this.cart) {
+						this.maxVel.x = 1000;
+						this.currentAnim = this.anims.cart;
+						this.sfxEquip.play();
+						var spawnX, spawnY = this.pos.y;
+						if (this.flip) {
+							spawnX = this.pos.x - this.size.x;
+						} else {
+							spawnX = this.pos.x + this.size.x;
+						}
+						ig.game.spawnEntity( EntityCart, spawnY, spawnX, {
+							flip: this.flip,
+							type: this.type,
+							checkAgainst: this.checkAgainst,
+							player: this
+						});
 					} else {
-						spawnX = this.pos.x + this.size.x;
+						this.maxVel.x = 500;
+						var carts = ig.game.getEntitiesByType( EntityCart );
+						for (var i = 0; i < carts.length; i++) {
+							if (carts[i].player.player === this.player) {
+								carts[i].kill();
+							}
+						}
 					}
-					ig.game.spawnEntity( EntityCart, spawnY, spawnX, {
-						flip: this.flip,
-						type: this.type,
-						checkAgainst: this.checkAgainst,
-						player: this
-					});
+
 				}
 			}
 
